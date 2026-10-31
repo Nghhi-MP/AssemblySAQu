@@ -5,15 +5,19 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:WarningManager"
         mc:Ignorable="d"
-        Title="אסיפה - תור רשות הדיבור" Height="450" Width="800">
+        Title="אסיפה - הצעות" Height="450" Width="800"
+        SizeChanged="suggestionsGrid_SizeChanged"
+        FocusManager.FocusedElement="{Binding ElementName=suggestionContentsField}"
+        >
     <Grid>
         <Rectangle Height="217" VerticalAlignment="Top" Fill="Silver"/>
-        <ComboBox x:Name="studentNameField" Height="29" Margin="95,52,97,0" VerticalAlignment="Top" IsEditable="True" ItemsSource="{Binding AssemblyMembers}" DisplayMemberPath="Name" FontSize="16" KeyDown="ComboBox_KeyDown" Loaded="ComboBox_Loaded" FlowDirection="RightToLeft"/>
-        <TextBlock Height="28" Margin="224,19,224,0" TextWrapping="Wrap" VerticalAlignment="Top" TextAlignment="Center" FontSize="18"><Run FlowDirection="RightToLeft" Language="he-il" Text="הקלד שם חבר"/></TextBlock>
-        <ListView x:Name="warningInformationBox" d:ItemsSource="{d:SampleData ItemCount=5}" ItemsSource="{Binding AssemblyMembers}" Margin="0,109,0,0" FontSize="14" FlowDirection="RightToLeft">
+        <ComboBox x:Name="suggestionContentsField" Height="29" Margin="95,52,97,0" VerticalAlignment="Top" IsEditable="True" ItemsSource="{Binding Suggestions}" DisplayMemberPath="Contents" FontSize="16" KeyDown="ComboBox_KeyDown" Loaded="ComboBox_Loaded" FlowDirection="RightToLeft"/>
+        <TextBlock Height="28" Margin="224,19,224,0" TextWrapping="Wrap" VerticalAlignment="Top" TextAlignment="Center" FontSize="18"><Run FlowDirection="RightToLeft" Language="he-il" Text="הקלד הצעה"/></TextBlock>
+        <ListView x:Name="suggestionsGrid" d:ItemsSource="{d:SampleData ItemCount=5}" ItemsSource="{Binding Suggestions}" Margin="0,109,0,0" FontSize="14" FlowDirection="RightToLeft">
             <ListView.View>
                 <GridView>
-                    <GridViewColumn Header="שם חבר" Width="400" DisplayMemberBinding="{Binding Name}"/>
+                    <GridViewColumn x:Name="suggestionCol" Header="הצעה" Width="300" DisplayMemberBinding="{Binding Contents}"/>
+                    <GridViewColumn x:Name="votesCol" Header="קולות" Width="300" DisplayMemberBinding="{Binding Votes}"/>
                     <!--
                     <GridViewColumn Header="Warning Number" Width="150" DisplayMemberBinding="{Binding WarningNumber}"/>
 <GridViewColumn Header="Status" Width="190">

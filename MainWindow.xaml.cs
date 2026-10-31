@@ -1,4 +1,5 @@
-﻿using System.Collections.ObjectModel;
+﻿using SAQu;
+using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Text;
 using System.Text.Json.Serialization;
@@ -19,66 +20,34 @@ namespace WarningManager
     /// </summary>
     public partial class MainWindow : Window
     {
-        public enum WarningLevel
+        public class Suggestion : INotifyPropertyChanged
         {
-            Normal = 0,
-            Warned = 1,
-            FinalWarning = 2,
-            Ejected = 3
-        }
-        public class AssemblyMember : INotifyPropertyChanged
-        {
-            private string _name = string.Empty;
-            private WarningLevel _warningLevel;
+            private string _contents = string.Empty;
+            private int _votes = 0;
 
-            public required string Name
+            public required string Contents
             {
-                get => _name;
+                get => _contents;
                 set
                 {
-                    if (_name != value)
+                    if (_contents != value)
                     {
-                        _name = value;
-                        OnPropertyChanged(nameof(Name));
+                        _contents = value;
+                        OnPropertyChanged(nameof(Contents));
                     }
                 }
             }
 
-            public WarningLevel WarningLevel
+            public int Votes
             {
-                get => _warningLevel;
+                get => _votes;
                 set
                 {
-                    if (_warningLevel != value)
+                    if (_votes != value)
                     {
-                        _warningLevel = value;
-                        OnPropertyChanged(nameof(WarningLevel));
-                        OnPropertyChanged(nameof(WarningNumber));
-                        OnPropertyChanged(nameof(WarningLevelTitle));
+                        _votes = value;
+                        OnPropertyChanged(nameof(Votes));
                     }
-                }
-            }
-
-            public string WarningLevelTitle
-            {
-                get
-                {
-                    switch (WarningLevel)
-                    {
-                        case WarningLevel.Normal: return "Normal";
-                        case WarningLevel.Warned: return "Warned";
-                        case WarningLevel.FinalWarning: return "Final Warning";
-                        case WarningLevel.Ejected: return "EJECTED.";
-                        default: return "???";
-                    }
-                }
-            }
-
-            public int WarningNumber
-            {
-                get
-                {
-                    return (int)WarningLevel;
                 }
             }
 
@@ -90,7 +59,7 @@ namespace WarningManager
             }
         }
 
-        public ObservableCollection<AssemblyMember> AssemblyMembers { get; set; } = [];
+        public ObservableCollection<Suggestion> Suggestions { get; set; } = [];
 
         public MainWindow()
         {
@@ -99,7 +68,7 @@ namespace WarningManager
         }
         private void ComboBox_Loaded(object sender, RoutedEventArgs e)
         {
-            var textBox = (TextBox)studentNameField.Template.FindName("PART_EditableTextBox", studentNameField);
+            var textBox = (TextBox)suggestionContentsField.Template.FindName("PART_EditableTextBox", suggestionContentsField);
             if (textBox != null)
             {
                 textBox.TextChanged += ComboBoxTextChanged;
@@ -108,13 +77,13 @@ namespace WarningManager
 
         private void SelectItemInBox()
         {
-            string studentName = studentNameField.Text;
+            string suggestionContents = suggestionContentsField.Text;
 
-            if (AssemblyMembers.FirstOrDefault(member => member.Name == studentName) is { } member)
+            if (Suggestions.FirstOrDefault(suggestion => suggestion.Contents == suggestionContents) is { } suggestion)
             {
-                int i = warningInformationBox.Items.IndexOf(member);
-                warningInformationBox.SelectedIndex = i;
-                warningInformationBox.ScrollIntoView(member);
+                int i = suggestionsGrid.Items.IndexOf(suggestion);
+                suggestionsGrid.SelectedIndex = i;
+                suggestionsGrid.ScrollIntoView(suggestion);
             }
         }
 
@@ -123,60 +92,95 @@ namespace WarningManager
             SelectItemInBox();
         }
 
+        private void OrderSuggestions()
+        {
+            var ordered = Suggestions.OrderByDescending(suggestion => suggestion.Votes);
+            for (int i = 0; i < ordered.Count(); i++)
+            {
+                var oldIndex = Suggestions.IndexOf(ordered.ElementAt(i));
+                if (oldIndex != i)
+                    Suggestions.Move(oldIndex, i);
+            }
+        }
+
         private void ComboBox_KeyDown(object sender, KeyEventArgs e)
         {
-            string studentName = studentNameField.Text;
+            string suggestionContents = suggestionContentsField.Text;
 
             switch (e.Key)
             {
                 case Key.F2:
                     {
-                        if (AssemblyMembers.FirstOrDefault(member => member.Name == studentName) is AssemblyMember assemblyMember)
+                        if (Suggestions.FirstOrDefault(suggestion => suggestion.Contents == suggestionContents) is Suggestion suggestion)
                         {
-                            int indexOfMember = AssemblyMembers.IndexOf(assemblyMember);
-                            if (indexOfMember < AssemblyMembers.Count - 1)
+                            int indexOfSuggestion = Suggestions.IndexOf(suggestion);
+                            if (indexOfSuggestion < Suggestions.Count - 1)
                             {
-                                AssemblyMembers.Move(indexOfMember, indexOfMember + 1);
+                                Suggestions.Move(indexOfSuggestion, indexOfSuggestion + 1);
                             }
                         }
                     }
                     break;
                 case Key.F3:
                     {
-                        if (AssemblyMembers.FirstOrDefault(member => member.Name == studentName) is AssemblyMember assemblyMember)
+                        if (Suggestions.FirstOrDefault(suggestion => suggestion.Contents == suggestionContents) is Suggestion suggestion)
                         {
-                            int indexOfMember = AssemblyMembers.IndexOf(assemblyMember);
-                            if (indexOfMember != 0)
+                            int indexOfSuggestion = Suggestions.IndexOf(suggestion);
+                            if (indexOfSuggestion != 0)
                             {
-                                AssemblyMembers.Move(indexOfMember, indexOfMember - 1);
+                                Suggestions.Move(indexOfSuggestion, indexOfSuggestion - 1);
                             }
                         }
                     }
                     break;
                 case Key.Enter:
                     {
-                        if (string.IsNullOrWhiteSpace(studentName)) return;
+                        if (string.IsNullOrWhiteSpace(suggestionContents)) return;
 
                         if (Keyboard.IsKeyDown(Key.LeftCtrl))
                         {
-                            if (AssemblyMembers.FirstOrDefault(member => member.Name == studentName) is AssemblyMember assemblyMember)
+                            if (Suggestions.FirstOrDefault(suggestion => suggestion.Contents == suggestionContents) is Suggestion suggestion)
                             {
-                                AssemblyMembers.Remove(assemblyMember);
+                                int suggestionIndex = Suggestions.IndexOf(suggestion);
+                                Suggestions.Remove(suggestion);
+                                //MessageBox.Show($"{suggestionIndex} < {Suggestions.Count}");
+                                if (suggestionIndex >= 0 && suggestionIndex < Suggestions.Count)
+                                    suggestionContentsField.Text = Suggestions[suggestionIndex].Contents;
+                                else if (Suggestions.Count < 1)
+                                    suggestionContentsField.Text = string.Empty;
+                                else
+                                    suggestionContentsField.Text = Suggestions[^1].Contents;
                             }
                         }
                         else
                         {
-                            if (AssemblyMembers.FirstOrDefault(member => member.Name == studentName) is AssemblyMember member)
+                            if (Suggestions.FirstOrDefault(suggestion => suggestion.Contents == suggestionContents) is Suggestion suggestion)
                             {
-                                //if ((int)member.WarningLevel >= 3)
-                                //{
-
-                                //}
-                                //else member.WarningLevel++;
+                                var inputBox = new InputBox()
+                                {
+                                    Title = "Vote"
+                                };
+                                inputBox.CaptionBlock.Text = "Enter number of votes:";
+                                inputBox.InputField.Text = suggestion.Votes.ToString();
+                                inputBox.EnterButton.Click += (sender, args) =>
+                                {
+                                    if (int.TryParse(inputBox.InputField.Text, out int value) && value >= 0)
+                                    {
+                                        suggestion.Votes = value;
+                                        OrderSuggestions();
+                                    }
+                                };
+                                inputBox.ShowDialog();
                             }
                             else
                             {
-                                AssemblyMembers.Add(new() { Name = studentName, WarningLevel = WarningLevel.Warned });
+                                Suggestions.Add(new() { Contents = suggestionContents });
+                                if (suggestionContentsField.Template.FindName("PART_EditableTextBox", suggestionContentsField)
+                                    is TextBox textBox)
+                                {
+                                    textBox.SelectAll();
+                                }
+
                             }
                         }
                     }
@@ -184,6 +188,12 @@ namespace WarningManager
                     break;
             }
 
+        }
+
+        private void suggestionsGrid_SizeChanged(object sender, SizeChangedEventArgs e)
+        {
+            suggestionCol.Width = Width / 2;
+            votesCol.Width = Width / 2;
         }
     }
 }
