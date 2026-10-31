@@ -10,9 +10,9 @@
         FocusManager.FocusedElement="{Binding ElementName=suggestionContentsField}"
         >
     <Grid>
-        <Rectangle Height="217" VerticalAlignment="Top" Fill="Silver"/>
+        <Rectangle Height="217" VerticalAlignment="Top" Fill="#FF3482FF"/>
         <ComboBox x:Name="suggestionContentsField" Height="29" Margin="95,52,97,0" VerticalAlignment="Top" IsEditable="True" ItemsSource="{Binding Suggestions}" DisplayMemberPath="Contents" FontSize="16" KeyDown="ComboBox_KeyDown" Loaded="ComboBox_Loaded" FlowDirection="RightToLeft"/>
-        <TextBlock Height="28" Margin="224,19,224,0" TextWrapping="Wrap" VerticalAlignment="Top" TextAlignment="Center" FontSize="18"><Run FlowDirection="RightToLeft" Language="he-il" Text="הקלד הצעה"/></TextBlock>
+        <TextBlock Height="28" Margin="224,19,224,0" TextWrapping="Wrap" VerticalAlignment="Top" TextAlignment="Center" FontSize="18" Foreground="White"><Run FlowDirection="RightToLeft" Language="he-il" Text="הקלד הצעה"/></TextBlock>
         <ListView x:Name="suggestionsGrid" d:ItemsSource="{d:SampleData ItemCount=5}" ItemsSource="{Binding Suggestions}" Margin="0,109,0,0" FontSize="14" FlowDirection="RightToLeft">
             <ListView.View>
                 <GridView>
