@@ -180,7 +180,7 @@ namespace WarningManager
                                 {
                                     textBox.SelectAll();
                                 }
-
+                                suggestionContentsField.SelectedIndex = Suggestions.Count - 1;
                             }
                         }
                     }
