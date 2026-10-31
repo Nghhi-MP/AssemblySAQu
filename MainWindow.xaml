@@ -5,7 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:WarningManager"
         mc:Ignorable="d"
-        Title="אסיפה - הצעות" Height="450" Width="800"
+        Title="אסיפה - הצבעה" Height="450" Width="800"
         SizeChanged="suggestionsGrid_SizeChanged"
         FocusManager.FocusedElement="{Binding ElementName=suggestionContentsField}"
         >
